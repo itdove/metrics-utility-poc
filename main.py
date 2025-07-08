@@ -1,7 +1,4 @@
 from kubernetes import client, config
-from openshift.dynamic import DynamicClient
-
-import json
 
 def describe_kubernetes_node(node_name):
     """
@@ -21,15 +18,11 @@ def describe_kubernetes_node(node_name):
         # Create a CoreV1Api client
         api_instance = client.CoreV1Api()
 
-        nodes_json = api_instance.list_node()
+        nodes = api_instance.list_node()
 
-        print(nodes_json)
-
-        nodes = json.loads(nodes_json)
-
-        for node in nodes:
+        for node_info in nodes.items:
             # Read the node details
-            node_info = api_instance.read_node(name=node["name"])
+            # node_info = api_instance.read_node(name=node)
 
             # Print relevant information (customize as needed)
             print(f"Node Name: {node_info.metadata.name}")
