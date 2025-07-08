@@ -1,0 +1,10 @@
+[project]
+name = "metric-cpu-poc"
+version = "0.1.0"
+description = "POC to retrieve cpu metric"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "kubernetes>=33.1.0",
+    "openshift>=0.13.2",
+]
