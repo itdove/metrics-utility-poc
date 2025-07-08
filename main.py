@@ -1,36 +1,51 @@
 from kubernetes import client, config
 from openshift.dynamic import DynamicClient
 
+import json
+
 def describe_kubernetes_node(node_name):
     """
     Retrieves detailed information about a specific Kubernetes node,
     similar to 'kubectl describe node <node-name>'.
     """
     try:
-        # Load Kubernetes configuration
-        k8s_client = config.new_client_from_config()
-
+        try:
+            config.load_incluster_config()
+        except config.ConfigException:
+            # Handle cases where the code might also run outside the cluster
+            # For example, by falling back to loading from kubeconfig
+            try:
+                config.load_kube_config()
+            except config.ConfigException:
+                raise Exception("Could not configure Kubernetes Python client")
         # Create a CoreV1Api client
         api_instance = client.CoreV1Api()
 
-        # Read the node details
-        node_info = api_instance.read_node(name=node_name)
+        nodes_json = api_instance.list_node()
 
-        # Print relevant information (customize as needed)
-        print(f"Node Name: {node_info.metadata.name}")
-        print(f"Kubernetes Version: {node_info.status.node_info.kubelet_version}")
-        print(f"OS Image: {node_info.status.node_info.os_image}")
-        print(f"Architecture: {node_info.status.node_info.architecture}")
-        print("\nAddresses:")
-        for address in node_info.status.addresses:
-            print(f"  {address.type}: {address.address}")
-        print("\nCapacity:")
-        for resource, value in node_info.status.capacity.items():
-            print(f"  {resource}: {value}")
-        print("\nConditions:")
-        for condition in node_info.status.conditions:
-            print(f"  {condition.type}: {condition.status} (Reason: {condition.reason}, Message: {condition.message})")
-        
+        print(nodes_json)
+
+        nodes = json.loads(nodes_json)
+
+        for node in nodes:
+            # Read the node details
+            node_info = api_instance.read_node(name=node["name"])
+
+            # Print relevant information (customize as needed)
+            print(f"Node Name: {node_info.metadata.name}")
+            print(f"Kubernetes Version: {node_info.status.node_info.kubelet_version}")
+            print(f"OS Image: {node_info.status.node_info.os_image}")
+            print(f"Architecture: {node_info.status.node_info.architecture}")
+            print("\nAddresses:")
+            for address in node_info.status.addresses:
+                print(f"  {address.type}: {address.address}")
+            print("\nCapacity:")
+            for resource, value in node_info.status.capacity.items():
+                print(f"  {resource}: {value}")
+            print("\nConditions:")
+            for condition in node_info.status.conditions:
+                print(f"  {condition.type}: {condition.status} (Reason: {condition.reason}, Message: {condition.message})")
+            
         # You can access other fields like events, volumes, etc., from node_info
         
     except client.ApiException as e:

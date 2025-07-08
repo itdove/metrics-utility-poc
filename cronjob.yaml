@@ -1,13 +1,10 @@
 kind: CronJob
 apiVersion: batch/v1
 metadata:
-  annotations:
-    kubectl.kubernetes.io/last-applied-configuration: '{"apiVersion":"batch/v1","kind":"CronJob","metadata":{"labels":{"app.kubernetes.io/component":"automationcontroller","app.kubernetes.io/managed-by":"automationcontroller-operator","app.kubernetes.io/name":"automation-controller-metrics-utility-gather-console","app.kubernetes.io/operator-version":"2.5","app.kubernetes.io/part-of":"automation-controller","app.kubernetes.io/version":"919777713928a849dd1ea550a834ddbe5c363c1d203e7e8bf184ca1f36b3c03"},"name":"automation-controller-metrics-utility-gather-console","namespace":"ansible-automation-platform"},"spec":{"jobTemplate":{"spec":{"backoffLimit":2,"template":{"metadata":{"labels":{"app.kubernetes.io/component":"automationcontroller","app.kubernetes.io/managed-by":"automationcontroller-operator","app.kubernetes.io/name":"automation-controller-metrics-utility-gather-console","app.kubernetes.io/operator-version":"2.5","app.kubernetes.io/part-of":"automation-controller","app.kubernetes.io/version":"919777713928a849dd1ea550a834ddbe5c363c1d203e7e8bf184ca1f36b3c03"}},"spec":{"containers":[{"command":["/bin/sh","-c","metrics-utility gather_automation_controller_billing_data --ship --until=10m"],"env":[{"name":"METRICS_UTILITY_SHIP_TARGET","value":"crc"}],"envFrom":[{"configMapRef":{"name":"metrics-utility-config"}},{"secretRef":{"name":"metrics-utility-secret"}}],"image":"registry.redhat.io/ansible-automation-platform-25/controller-rhel8@sha256:919777713928a849dd1ea550a834ddbe5c363c1d203e7e8bf184ca1f36b3c03c","imagePullPolicy":"IfNotPresent","name":"automation-controller-metrics-utility-gather-console","resources":{"requests":{"cpu":"100m","memory":"100Mi"}},"volumeMounts":[{"mountPath":"/etc/tower/conf.d/credentials.py","name":"automation-controller-application-credentials","readOnly":true,"subPath":"credentials.py"},{"mountPath":"/etc/tower/SECRET_KEY","name":"automation-controller-secret-key","readOnly":true,"subPath":"SECRET_KEY"},{"mountPath":"/etc/tower/settings.py","name":"automation-controller-settings","readOnly":true,"subPath":"settings.py"}]}],"imagePullSecrets":[{"name":"redhat-operators-pull-secret"}],"restartPolicy":"OnFailure","volumes":[{"name":"automation-controller-application-credentials","secret":{"items":[{"key":"credentials.py","path":"credentials.py"}],"secretName":"automation-controller-app-credentials"}},{"name":"automation-controller-secret-key","secret":{"items":[{"key":"secret_key","path":"SECRET_KEY"}],"secretName":"automation-controller-secret-key"}},{"configMap":{"items":[{"key":"settings","path":"settings.py"}],"name":"automation-controller-automationcontroller-configmap"},"name":"automation-controller-settings"}]}}}},"schedule":"@hourly"}}'
   name: automation-controller-metrics-utility-gather-node
-  namespace: ansible-saas
+  namespace: ansible-automation-platform
 spec:
   schedule: '*/10 * * * *'
-  concurrencyPolicy: Allow
   suspend: false
   jobTemplate:
     spec:
@@ -19,42 +16,7 @@ spec:
                 requests:
                   cpu: 100m
                   memory: 100Mi
-              terminationMessagePath: /dev/termination-log
               name: automation-controller-metrics-utility-gather-node
-              command:
-                - /bin/sh
-                - '-c'
-                - metrics-utility gather_automation_controller_billing_data --ship --until=10m
-              env:
-                - name: METRICS_UTILITY_SHIP_TARGET
-                  value: crc
-              imagePullPolicy: IfNotPresent
-              volumeMounts:
-                - name: automation-controller-application-credentials
-                  readOnly: true
-                  mountPath: /etc/tower/conf.d/credentials.py
-                  subPath: credentials.py
-                - name: automation-controller-secret-key
-                  readOnly: true
-                  mountPath: /etc/tower/SECRET_KEY
-                  subPath: SECRET_KEY
-                - name: automation-controller-settings
-                  readOnly: true
-                  mountPath: /etc/tower/settings.py
-                  subPath: settings.py
-              terminationMessagePolicy: File
-              envFrom:
-                - configMapRef:
-                    name: metrics-utility-config
-                - secretRef:
-                    name: metrics-utility-secret
-              image: 'registry.redhat.io/ansible-automation-platform-25/controller-rhel8@sha256:919777713928a849dd1ea550a834ddbe5c363c1d203e7e8bf184ca1f36b3c03c'
+              imagePullPolicy: Always
+              image: 'quay.io/itdove/metrics-utility-poc:latest'
           restartPolicy: OnFailure
-          terminationGracePeriodSeconds: 30
-          dnsPolicy: ClusterFirst
-          securityContext: {}
-          imagePullSecrets:
-            - name: redhat-operators-pull-secret
-          schedulerName: default-scheduler
-  successfulJobsHistoryLimit: 3
-  failedJobsHistoryLimit: 1
