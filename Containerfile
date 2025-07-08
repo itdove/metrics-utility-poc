@@ -4,8 +4,4 @@ WORKDIR /metrics-utility-poc
 
 COPY . .
 
-RUN pwd
-
-RUN ls
-
 ENTRYPOINT [ "./run.sh" ]
