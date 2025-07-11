@@ -4,13 +4,14 @@ metadata:
   name: automation-controller-metrics-utility-gather-node
   namespace: ansible-automation-platform
 spec:
-  schedule: '*/10 * * * *'
+  schedule: '*/1 * * * *'
   suspend: false
   jobTemplate:
     spec:
       backoffLimit: 2
       template:
         spec:
+          serviceAccountName: gather-node
           containers:
             - resources:
                 requests:
@@ -19,4 +20,4 @@ spec:
               name: automation-controller-metrics-utility-gather-node
               imagePullPolicy: Always
               image: 'quay.io/itdove/metrics-utility-poc:latest'
-          restartPolicy: OnFailure
+          restartPolicy: Never
